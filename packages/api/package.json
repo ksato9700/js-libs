@@ -23,6 +23,7 @@
     "test": "cross-env NODE_ENV=test mocha -r ts-node/register 'src/*.spec.js' 'src/**/*.spec.js'"
   },
   "devDependencies": {
+    "@types/nock": "^10.0.3",
     "chai": "3.5.0",
     "chai-as-promised": "7.1.1",
     "coveralls": "^3.0.0",

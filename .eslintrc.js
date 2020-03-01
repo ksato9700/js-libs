@@ -17,6 +17,14 @@ module.exports = {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+
+    'comma-dangle': ['error', 'only-multiline'],
+    'space-before-function-paren': ['error', 'never'],
+    'space-before-function-paren': ['error', {
+      'anonymouse': 'never',
+      'named': 'never',
+      'asyncArrow': 'always',
+    }],
   },
   overrides: [
     {
