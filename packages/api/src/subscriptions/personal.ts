@@ -1,21 +1,28 @@
-// Copyright 2015-2019 Parity Technologies (UK) Ltd.
+// Copyright 2015-2020 Parity Technologies (UK) Ltd.
 // This file is part of Parity.
+//
+// SPDX-License-Identifier: MIT
+export type Account = string;
+export type Info = string;
+export type UpdateSubscriptionsFunc = (
+  name: string,
+  error: Error | null,
+  data: Account | Account[]
+) => void;
 
-// Parity is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+export default class Personal {
+  _subscriber: any;
+  _api: any;
+  _updateSubscriptions: UpdateSubscriptionsFunc;
+  _started: boolean;
+  _lastDefaultAccount: string;
+  _pollTimerId: NodeJS.Timeout | null;
 
-// Parity is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
-
-class Personal {
-  constructor (updateSubscriptions, api, subscriber) {
+  constructor(
+    updateSubscriptions: UpdateSubscriptionsFunc,
+    api: any,
+    subscriber: any
+  ) {
     this._subscriber = subscriber;
     this._api = api;
     this._updateSubscriptions = updateSubscriptions;
@@ -24,10 +31,6 @@ class Personal {
     this._lastDefaultAccount = '0x0';
     this._pollTimerId = null;
 
-    this._accountsInfo = this._accountsInfo.bind(this);
-    this._defaultAccount = this._defaultAccount.bind(this);
-    this._listAccounts = this._listAccounts.bind(this);
-
     this._api.provider.on('close', () => {
       if (this.isStarted) {
         this.start();
@@ -35,37 +38,33 @@ class Personal {
     });
   }
 
-  get isStarted () {
+  get isStarted() {
     return this._started;
   }
 
-  start () {
+  start(): Promise<any> {
     this._started = true;
 
-    let defaultAccount = null;
-
-    if (this._api.isPubSub) {
-      defaultAccount = this._api.pubsub
-        .subscribeAndGetResult(
-          callback => this._api.pubsub.parity.defaultAccount(callback),
-          (defaultAccount) => {
+    const defaultAccount = this._api.isPubSub
+      ? this._api.pubsub.subscribeAndGetResult(
+          (callback: () => void) =>
+            this._api.pubsub.parity.defaultAccount(callback),
+          (defaultAccount: Account) => {
             this.updateDefaultAccount(defaultAccount);
             return defaultAccount;
           }
-        );
-    } else {
-      defaultAccount = this._defaultAccount();
-    }
+        )
+      : this._defaultAccount();
 
     return Promise.all([
       defaultAccount,
       this._listAccounts(),
       this._accountsInfo(),
-      this._loggingSubscribe()
+      this._loggingSubscribe(),
     ]);
   }
 
-  updateDefaultAccount (defaultAccount) {
+  updateDefaultAccount(defaultAccount: Account) {
     if (this._lastDefaultAccount !== defaultAccount) {
       this._lastDefaultAccount = defaultAccount;
       this._updateSubscriptions('parity_defaultAccount', null, defaultAccount);
@@ -76,7 +75,7 @@ class Personal {
   // doesn't work. Since the defaultAccount is critical to operation, we poll in exactly
   // same way we do in ../eth (ala eth_blockNumber) and update. This should be moved
   // to pub-sub as it becomes available
-  _defaultAccount (timerDisabled = false) {
+  _defaultAccount(timerDisabled = false) {
     const nextTimeout = (timeout = 3000) => {
       if (!timerDisabled) {
         this._pollTimerId = setTimeout(() => {
@@ -92,41 +91,37 @@ class Personal {
 
     return this._api.parity
       .defaultAccount()
-      .then((defaultAccount) => {
+      .then((defaultAccount: Account) => {
         this.updateDefaultAccount(defaultAccount);
         nextTimeout();
       })
       .catch(() => nextTimeout());
   }
 
-  _listAccounts () {
-    return this._api.eth
-      .accounts()
-      .then((accounts) => {
-        this._updateSubscriptions('eth_accounts', null, accounts);
-      });
+  _listAccounts() {
+    return this._api.eth.accounts().then((accounts: Account[]) => {
+      this._updateSubscriptions('eth_accounts', null, accounts);
+    });
   }
 
-  _accountsInfo () {
-    return this._api.parity
-      .accountsInfo()
-      .then((info) => {
-        this._updateSubscriptions('parity_accountsInfo', null, info);
+  _accountsInfo() {
+    return this._api.parity.accountsInfo().then((info: Info) => {
+      this._updateSubscriptions('parity_accountsInfo', null, info);
 
-        return this._api.parity
-          .allAccountsInfo()
-          .catch(() => {
-            // NOTE: This fails on non-secure APIs, swallow error
-            return {};
-          })
-          .then((allInfo) => {
-            this._updateSubscriptions('parity_allAccountsInfo', null, allInfo);
-          });
-      });
+      return this._api.parity
+        .allAccountsInfo()
+        .catch(() => {
+          // NOTE: This fails on non-secure APIs, swallow error
+          return {};
+        })
+        .then((allInfo: Info[]) => {
+          this._updateSubscriptions('parity_allAccountsInfo', null, allInfo);
+        });
+    });
   }
 
-  _loggingSubscribe () {
-    return this._subscriber.subscribe('logging', (error, data) => {
+  _loggingSubscribe() {
+    return this._subscriber.subscribe('logging', (error: Error, data: any) => {
       if (error || !data) {
         return;
       }
@@ -161,5 +156,3 @@ class Personal {
     });
   }
 }
-
-module.exports = Personal;
