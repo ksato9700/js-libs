@@ -17,7 +17,7 @@ export type UpdateSubscriptionsFunc = (
   data: UpdateData
 ) => void;
 
-export class Logging {
+export default class Logging {
   private _updateSubscriptions: UpdateSubscriptionsFunc;
 
   constructor(updateSubscriptions: UpdateSubscriptionsFunc) {

@@ -5,7 +5,8 @@
 
 /* eslint-disable no-unused-expressions */
 
-import { Logging, UpdateSubscriptionsFunc, UpdateData } from './logging';
+import Logging from './logging';
+import { UpdateSubscriptionsFunc } from './logging';
 
 describe('subscriptions/logging', () => {
   let cb: UpdateSubscriptionsFunc;
