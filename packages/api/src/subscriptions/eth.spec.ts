@@ -6,7 +6,8 @@
 /* eslint-disable no-unused-expressions */
 
 import BigNumber from 'bignumber.js';
-import Eth, { UpdateSubscriptionsFunc } from './eth';
+import Eth from './eth';
+import { UpdateSubscriptionsFunc } from './engine';
 
 const START_BLOCK = 5000;
 

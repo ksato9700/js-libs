@@ -2,15 +2,13 @@
 // This file is part of Parity.
 //
 // SPDX-License-Identifier: MIT
+
+import { Engine, UpdateSubscriptionsFunc } from './engine';
+
 export type Account = string;
 export type Info = string;
-export type UpdateSubscriptionsFunc = (
-  name: string,
-  error: Error | null,
-  data: Account | Account[]
-) => void;
 
-export default class Personal {
+export default class Personal implements Engine {
   _subscriber: any;
   _api: any;
   _updateSubscriptions: UpdateSubscriptionsFunc;

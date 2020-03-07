@@ -4,28 +4,23 @@
 // SPDX-License-Identifier: MIT
 
 import BigNumber from 'bignumber.js';
+import { Engine, UpdateSubscriptionsFunc } from './engine';
 
-export type UpdateSubscriptionsFunc = (
-  name: string,
-  error: Error | null,
-  data: BigNumber
-) => void;
-
-export default class Eth {
-  _api: any;
-  _updateSubscriptions: UpdateSubscriptionsFunc;
-  _started: boolean;
-  _lastBlock: BigNumber;
-  _pollTimerId: NodeJS.Timeout | null;
+export default class Eth implements Engine {
+  api: any;
+  updateSubscriptions: UpdateSubscriptionsFunc;
+  started: boolean;
+  lastBlock: BigNumber;
+  pollTimerId: NodeJS.Timeout | null;
 
   constructor(updateSubscriptions: UpdateSubscriptionsFunc, api: any) {
-    this._api = api;
-    this._updateSubscriptions = updateSubscriptions;
-    this._started = false;
-    this._lastBlock = new BigNumber(-1);
-    this._pollTimerId = null;
+    this.api = api;
+    this.updateSubscriptions = updateSubscriptions;
+    this.started = false;
+    this.lastBlock = new BigNumber(-1);
+    this.pollTimerId = null;
 
-    this._api.provider.on('close', () => {
+    this.api.provider.on('close', () => {
       if (this.isStarted) {
         this.start();
       }
@@ -33,24 +28,22 @@ export default class Eth {
   }
 
   get isStarted(): boolean {
-    return this._started;
+    return this.started;
   }
 
   start(): Promise<any> {
-    this._started = true;
+    this.started = true;
 
-    if (this._api.isPubSub) {
+    if (this.api.isPubSub) {
       return Promise.all([
         this._pollBlockNumber(false),
-        this._api.pubsub.subscribeAndGetResult(
-          (callback: () => void) => this._api.pubsub.eth.newHeads(callback),
+        this.api.pubsub.subscribeAndGetResult(
+          (callback: () => void) => this.api.pubsub.eth.newHeads(callback),
           () => {
-            return this._api.eth
-              .blockNumber()
-              .then((blockNumber: BigNumber) => {
-                this.updateBlock(blockNumber);
-                return blockNumber;
-              });
+            return this.api.eth.blockNumber().then((blockNumber: BigNumber) => {
+              this.updateBlock(blockNumber);
+              return blockNumber;
+            });
           }
         ),
       ]);
@@ -62,18 +55,18 @@ export default class Eth {
   _pollBlockNumber(doTimeout: boolean): Promise<void> {
     const nextTimeout = (timeout = 1000, forceTimeout = doTimeout) => {
       if (forceTimeout) {
-        this._pollTimerId = setTimeout(() => {
+        this.pollTimerId = setTimeout(() => {
           this._pollBlockNumber(doTimeout);
         }, timeout);
       }
     };
 
-    if (!this._api.provider.isConnected) {
+    if (!this.api.provider.isConnected) {
       nextTimeout(500, true);
       return Promise.resolve();
     }
 
-    return this._api.eth
+    return this.api.eth
       .blockNumber()
       .then((blockNumber: BigNumber) => {
         this.updateBlock(blockNumber);
@@ -84,9 +77,9 @@ export default class Eth {
   }
 
   updateBlock(blockNumber: BigNumber) {
-    if (!blockNumber.eq(this._lastBlock)) {
-      this._lastBlock = blockNumber;
-      this._updateSubscriptions('eth_blockNumber', null, blockNumber);
+    if (!blockNumber.eq(this.lastBlock)) {
+      this.lastBlock = blockNumber;
+      this.updateSubscriptions('eth_blockNumber', null, blockNumber);
     }
   }
 }

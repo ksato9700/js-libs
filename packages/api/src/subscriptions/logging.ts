@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT
 
+import { Engine, UpdateSubscriptionsFunc } from './engine';
+
 let instance: Logging | null = null;
 
 export interface UpdateData {
@@ -11,13 +13,7 @@ export interface UpdateData {
   json: string;
 }
 
-export type UpdateSubscriptionsFunc = (
-  name: string,
-  error: Error | null,
-  data: UpdateData
-) => void;
-
-export default class Logging {
+export default class Logging implements Engine {
   private _updateSubscriptions: UpdateSubscriptionsFunc;
 
   constructor(updateSubscriptions: UpdateSubscriptionsFunc) {
@@ -30,7 +26,9 @@ export default class Logging {
     return true;
   }
 
-  start(): void {}
+  start(): Promise<any> {
+    return Promise.resolve(true);
+  }
 
   static send(method: string, params: any, json: string): any {
     if (!instance) {

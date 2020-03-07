@@ -6,7 +6,8 @@
 /* eslint-disable no-unused-expressions */
 
 import Personal from './personal';
-import { Account, Info, UpdateSubscriptionsFunc } from './personal';
+import { Account, Info } from './personal';
+import { UpdateSubscriptionsFunc } from './engine';
 
 const TEST_DEFAULT = '0xfa64203C044691aA57251aF95f4b48d85eC00Dd5';
 const TEST_INFO = {

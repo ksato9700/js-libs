@@ -6,7 +6,7 @@
 /* eslint-disable no-unused-expressions */
 
 import Logging from './logging';
-import { UpdateSubscriptionsFunc } from './logging';
+import { UpdateSubscriptionsFunc } from './engine';
 
 describe('subscriptions/logging', () => {
   let cb: UpdateSubscriptionsFunc;
