@@ -3,5 +3,5 @@
 //
 // SPDX-License-Identifier: MIT
 
-export { Logging } from './logging';
-export { Manager } from './manager';
+export { default as Logging } from './logging';
+export { default as Manager } from './manager';
