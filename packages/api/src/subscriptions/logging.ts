@@ -10,7 +10,7 @@ let instance: Logging | null = null;
 export interface UpdateData {
   method: string;
   params: any;
-  json: string;
+  json: any;
 }
 
 export default class Logging implements Engine {
@@ -30,7 +30,7 @@ export default class Logging implements Engine {
     return Promise.resolve(true);
   }
 
-  static send(method: string, params: any, json: string): any {
+  static send(method: string, params: any, json: any): any {
     if (!instance) {
       return;
     }
